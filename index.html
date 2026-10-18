@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Palabria - Generador de Crucigramas</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        :root {
+            --topo-land: #fffdf8;
+            --topo-line: #b9ad9b;
+            --topo-ink: #1f1b17;
+            --topo-right: #5a8f5a;
+            --topo-accent: #d4a04a;
+            --topo-wrong: #8b4545;
+            --topo-sea: #daeffc;
+            --topo-abroad: #ece6da;
+            --topo-piece-line: #5d5449;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--topo-abroad);
+            background-image: radial-gradient(var(--topo-line) 1px, transparent 1px);
+            background-size: 24px 24px;
+            color: var(--topo-ink);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: var(--topo-land);
+            border: 1px solid var(--topo-line);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(31, 27, 23, 0.08);
+            overflow: hidden;
+            animation: topo-fade-in 0.5s ease-out;
+        }
+
+        @keyframes topo-fade-in {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header {
+            background: var(--topo-land);
+            border-bottom: 2px solid var(--topo-line);
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header .logo {
+            font-size: 3em;
+            font-weight: 800;
+            color: var(--topo-ink);
+            letter-spacing: -0.03em;
+            margin-bottom: 8px;
+            display: inline-block;
+            position: relative;
+        }
+
+        .header .logo::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 10%;
+            width: 80%;
+            height: 3px;
+            background: var(--topo-accent);
+            border-radius: 2px;
+        }
+
+        .header .tagline {
+            color: var(--topo-piece-line);
+            font-size: 1.1em;
+            font-style: italic;
+            margin-top: 10px;
+        }
+
+        .header .subtitle {
+            color: var(--topo-piece-line);
+            font-size: 1em;
+            margin-top: 5px;
+        }
+
+        .content { padding: 30px; }
+
+        .upload-section {
+            text-align: center;
+            padding: 40px 30px;
+            border: 2px dashed var(--topo-line);
+            border-radius: 12px;
+            background: color-mix(in srgb, var(--topo-ink) 2%, var(--topo-land));
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .upload-section:hover {
+            border-color: var(--topo-ink);
+            background: color-mix(in srgb, var(--topo-ink) 4%, var(--topo-land));
+        }
+
+        .upload-section input[type="file"] { display: none; }
+
+        .upload-btn {
+            background: var(--topo-ink);
+            color: var(--topo-land);
+            padding: 14px 36px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.05em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-block;
+            box-shadow: 0 2px 4px rgba(31, 27, 23, 0.15);
+            letter-spacing: 0.02em;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(31, 27, 23, 0.25);
+        }
+
+        .format-info {
+            background: var(--topo-sea);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: left;
+            border: 1px solid color-mix(in srgb, var(--topo-ink) 10%, var(--topo-sea));
+        }
+
+        .format-info h3 { color: var(--topo-ink); margin-bottom: 10px; font-size: 1em; }
+        .format-info code {
+            background: var(--topo-land);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: 'ui-monospace', 'SFMono-Regular', monospace;
+            font-size: 0.9em;
+            color: var(--topo-piece-line);
+            border: 1px solid var(--topo-line);
+        }
+
+        .controls { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin: 30px 0; }
+
+        .btn {
+            padding: 11px 24px;
+            border: 1px solid var(--topo-line);
+            border-radius: 10px;
+            font-size: 0.95em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: var(--topo-land);
+            color: var(--topo-ink);
+            box-shadow: 0 2px 4px rgba(31, 27, 23, 0.05);
+        }
+
+        .btn:hover { border-color: var(--topo-ink); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(31, 27, 23, 0.1); }
+        .btn-primary { background: var(--topo-ink); color: var(--topo-land); border-color: var(--topo-ink); }
+        .btn-primary:hover { background: #2d2620; }
+        .btn-regenerate { background: var(--topo-accent); color: var(--topo-land); border-color: var(--topo-accent); }
+        .btn-regenerate:hover { background: #c4923a; border-color: #c4923a; }
+
+        .crossword-container { margin: 30px 0; display: none; animation: topo-fade-in 0.6s ease-out; }
+
+        .attempt-badge {
+            display: inline-block;
+            background: var(--topo-accent);
+            color: var(--topo-land);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.9em;
+            letter-spacing: 0.05em;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(212, 160, 74, 0.3);
+        }
+
+        .toggle-view { display: flex; justify-content: center; gap: 8px; margin: 20px 0; }
+
+        .toggle-btn {
+            padding: 8px 20px;
+            border: 1px solid var(--topo-line);
+            background: var(--topo-land);
+            color: var(--topo-piece-line);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .toggle-btn.active { background: var(--topo-ink); color: var(--topo-land); border-color: var(--topo-ink); }
+
+        .crossword-grid {
+            display: inline-block;
+            margin: 0 auto;
+            border: 2px solid var(--topo-ink);
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(31, 27, 23, 0.1);
+        }
+
+        .crossword-row { display: flex; }
+
+        .crossword-cell {
+            width: 36px; height: 36px;
+            border: 1px solid var(--topo-line);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 1.1em;
+            position: relative; background: var(--topo-land); color: var(--topo-ink);
+        }
+
+        .crossword-cell.black { background: var(--topo-ink); border-color: var(--topo-ink); }
+
+        .crossword-cell .cell-number {
+            position: absolute; top: 2px; left: 3px;
+            font-size: 0.55em; font-weight: 700; color: var(--topo-piece-line); line-height: 1;
+        }
+
+        .crossword-cell .cell-letter { font-size: 1.1em; text-transform: uppercase; }
+
+        .clues-section { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 30px; }
+
+        .clues-column {
+            background: color-mix(in srgb, var(--topo-ink) 3%, var(--topo-land));
+            padding: 20px; border-radius: 10px; border: 1px solid var(--topo-line);
+        }
+
+        .clues-column h3 {
+            color: var(--topo-ink); margin-bottom: 15px; padding-bottom: 10px;
+            border-bottom: 2px solid var(--topo-accent); font-size: 1.1em; letter-spacing: 0.05em;
+        }
+
+        .clue-item { margin-bottom: 10px; padding: 8px; border-radius: 6px; transition: background 0.2s ease; font-size: 0.95em; line-height: 1.4; }
+        .clue-item:hover { background: color-mix(in srgb, var(--topo-ink) 5%, var(--topo-land)); }
+        .clue-number { font-weight: 800; color: var(--topo-accent); margin-right: 6px; font-size: 1em; }
+
+        .status-message {
+            text-align: center; padding: 16px; margin: 20px 0; border-radius: 10px;
+            display: none; font-weight: 600; animation: topo-fade-in 0.3s ease-out;
+        }
+
+        .status-message.success {
+            background: color-mix(in srgb, var(--topo-right) 15%, var(--topo-land));
+            color: var(--topo-right); border: 1px solid color-mix(in srgb, var(--topo-right) 30%, var(--topo-land));
+        }
+
+        .status-message.error {
+            background: color-mix(in srgb, var(--topo-wrong) 15%, var(--topo-land));
+            color: var(--topo-wrong); border: 1px solid color-mix(in srgb, var(--topo-wrong) 30%, var(--topo-land));
+        }
+
+        .preview-list {
+            max-height: 250px; overflow-y: auto; text-align: left; margin-top: 15px;
+            padding: 15px; background: var(--topo-land); border-radius: 8px;
+            font-size: 0.85em; border: 1px solid var(--topo-line);
+        }
+
+        .preview-list .preview-item { padding: 6px 0; border-bottom: 1px solid color-mix(in srgb, var(--topo-ink) 10%, var(--topo-land)); }
+        .preview-list .preview-item:last-child { border-bottom: none; }
+        .preview-item strong:first-child { color: var(--topo-accent); margin-right: 8px; }
+
+        .footer-brand {
+            text-align: center;
+            padding: 20px;
+            color: var(--topo-piece-line);
+            font-size: 0.85em;
+            border-top: 1px solid var(--topo-line);
+            margin-top: 20px;
+        }
+
+        .footer-brand strong {
+            color: var(--topo-ink);
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+
+        @media (max-width: 768px) {
+            .clues-section { grid-template-columns: 1fr; }
+            .crossword-cell { width: 30px; height: 30px; font-size: 0.9em; }
+            .crossword-cell .cell-number { font-size: 0.5em; top: 1px; left: 2px; }
+            .controls { flex-direction: column; align-items: stretch; }
+            .btn { width: 100%; }
+            .header .logo { font-size: 2.2em; }
+        }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .container { box-shadow: none; border: none; }
+            .controls, .upload-section, .toggle-view, .attempt-badge { display: none !important; }
+            .crossword-cell { border: 1px solid #000; }
+            .crossword-cell.black { background: #1f1b17 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">Palabria</div>
+            <p class="tagline">"Donde las palabras se cruzan y las ideas cobran forma"</p>
+            <p class="subtitle">Generador de crucigramas personalizados desde CSV</p>
+        </div>
+
+        <div class="content">
+            <div class="upload-section">
+                <h2>📁 Cargar archivo de pistas</h2>
+                <p style="margin: 15px 0; color: var(--topo-piece-line);">Selecciona tu archivo con las preguntas y respuestas</p>
+                <label for="csvFile" class="upload-btn">Seleccionar archivo</label>
+                <input type="file" id="csvFile" accept=".csv,.tsv,.txt" />
+                
+                <div class="format-info">
+                    <h3>📋 Formatos aceptados:</h3>
+                    <p style="margin-bottom: 8px;"><strong>Separador:</strong> Tabulación, coma o punto y coma</p>
+                    <p style="margin-bottom: 8px;"><code>pregunta [tab] respuesta</code></p>
+                    <p><code>"Pregunta con ""comillas"" internas" [tab] RESPUESTA</code></p>
+                    <p style="margin-top: 12px; font-size: 0.9em; color: var(--topo-piece-line);">
+                        💡 Las respuestas deben estar en mayúsculas, sin espacios ni acentos.
+                    </p>
+                </div>
+
+                <div id="previewContainer" style="display: none;">
+                    <h3 style="margin-top: 20px; color: var(--topo-ink); font-size: 1em;">📋 Vista previa de pistas cargadas:</h3>
+                    <div class="preview-list" id="previewList"></div>
+                </div>
+            </div>
+
+            <div id="statusMessage" class="status-message"></div>
+
+            <div class="controls" id="controlsSection" style="display: none;">
+                <button class="btn btn-primary" onclick="generateCrossword()">🧩 Generar Palabria</button>
+                <button class="btn btn-regenerate" id="regenerateBtn" onclick="regenerateCrossword()" style="display: none;"> Nueva Alternativa</button>
+                <button class="btn" onclick="downloadPDF('sin-respuestas')">📄 PDF Sin Respuestas</button>
+                <button class="btn" onclick="downloadPDF('con-respuestas')">📄 PDF Con Respuestas</button>
+            </div>
+
+            <div class="crossword-container" id="crosswordContainer">
+                <div style="text-align: center;">
+                    <div class="attempt-badge" id="attemptBadge">INTENTO #1</div>
+                </div>
+                <div class="toggle-view">
+                    <button class="toggle-btn active" onclick="toggleView('sin-respuestas')">Ocultar Respuestas</button>
+                    <button class="toggle-btn" onclick="toggleView('con-respuestas')">Mostrar Respuestas</button>
+                </div>
+                <div id="crosswordDisplay" style="text-align: center;"></div>
+                <div class="clues-section" id="cluesSection"></div>
+            </div>
+
+            <div class="footer-brand">
+                Hecho con ❤️ por <strong>PALABRIA</strong> · Generador de crucigramas
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let csvData = [];
+        let crosswordData = null;
+        let currentView = 'sin-respuestas';
+        let attemptNumber = 0;
+
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        function parseCSVLine(line, delimiter) {
+            const fields = [];
+            let current = '';
+            let inQuotes = false;
+            let i = 0;
+
+            while (i < line.length) {
+                const char = line[i];
+                const nextChar = i + 1 < line.length ? line[i + 1] : '';
+
+                if (inQuotes) {
+                    if (char === '"' && nextChar === '"') { current += '"'; i += 2; continue; }
+                    else if (char === '"') { inQuotes = false; i++; continue; }
+                    else { current += char; i++; continue; }
+                } else {
+                    if (char === '"') { inQuotes = true; i++; continue; }
+                    else if (char === delimiter) { fields.push(current.trim()); current = ''; i++; continue; }
+                    else { current += char; i++; continue; }
+                }
+            }
+            fields.push(current.trim());
+            return fields;
+        }
+
+        function detectDelimiter(line) {
+            const tabCount = (line.match(/\t/g) || []).length;
+            const semicolonCount = (line.match(/;/g) || []).length;
+            const commaCount = (line.match(/,/g) || []).length;
+            if (tabCount > 0) return '\t';
+            if (semicolonCount > commaCount) return ';';
+            return ',';
+        }
+
+        document.getElementById('csvFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(event) { parseCSV(event.target.result); };
+            reader.readAsText(file);
+        });
+
+        function parseCSV(text) {
+            const lines = text.split(/\r?\n/).filter(line => line.trim());
+            csvData = [];
+            if (lines.length === 0) { showStatus('Archivo vacío', 'error'); return; }
+
+            const delimiter = detectDelimiter(lines[0]);
+            let startIndex = 0;
+            const firstFields = parseCSVLine(lines[0], delimiter);
+            if (firstFields.length >= 2) {
+                const firstField = firstFields[0].toLowerCase();
+                if (firstField.includes('pregunta') || firstField.includes('question') || firstField.includes('pista')) {
+                    startIndex = 1;
+                }
+            }
+
+            for (let i = startIndex; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                const fields = parseCSVLine(line, delimiter);
+                if (fields.length >= 2) {
+                    const pregunta = fields[0].trim();
+                    const respuesta = fields[fields.length - 1].trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^A-Z0-9]/g, "");
+                    if (pregunta && respuesta && respuesta.length >= 2) {
+                        csvData.push({ pregunta, respuesta });
+                    }
+                }
+            }
+
+            if (csvData.length === 0) { showStatus('No se encontraron datos válidos. Verifica el formato.', 'error'); return; }
+            showStatus(`✓ Se cargaron ${csvData.length} pistas correctamente`, 'success');
+            document.getElementById('controlsSection').style.display = 'flex';
+            showPreview();
+        }
+
+        function showPreview() {
+            const container = document.getElementById('previewContainer');
+            const list = document.getElementById('previewList');
+            container.style.display = 'block';
+            list.innerHTML = csvData.map((item, idx) => `
+                <div class="preview-item">
+                    <strong>${idx + 1}.</strong> ${item.pregunta} → <strong>${item.respuesta}</strong>
+                </div>
+            `).join('');
+        }
+
+        function showStatus(message, type) {
+            const statusEl = document.getElementById('statusMessage');
+            statusEl.textContent = message;
+            statusEl.className = `status-message ${type}`;
+            statusEl.style.display = 'block';
+            setTimeout(() => { statusEl.style.display = 'none'; }, 5000);
+        }
+
+        function generateCrossword() {
+            if (csvData.length === 0) { showStatus('Primero carga un archivo', 'error'); return; }
+            attemptNumber = 1;
+            buildAndShow();
+        }
+
+        function regenerateCrossword() {
+            if (csvData.length === 0) { showStatus('Primero carga un archivo', 'error'); return; }
+            attemptNumber++;
+            buildAndShow();
+            showStatus(`🎲 Generando alternativa #${attemptNumber}...`, 'success');
+        }
+
+        function buildAndShow() {
+            const shuffled = shuffleArray(csvData);
+            const words = [...shuffled].sort((a, b) => b.respuesta.length - a.respuesta.length);
+            crosswordData = buildCrossword(words);
+            displayCrossword();
+            document.getElementById('crosswordContainer').style.display = 'block';
+            document.getElementById('regenerateBtn').style.display = 'inline-block';
+            document.getElementById('attemptBadge').textContent = `INTENTO #${attemptNumber}`;
+            currentView = 'sin-respuestas';
+            document.querySelectorAll('.toggle-btn').forEach((btn, idx) => { btn.classList.toggle('active', idx === 0); });
+        }
+
+        function buildCrossword(words) {
+            const gridSize = 25;
+            const grid = Array(gridSize).fill(null).map(() => Array(gridSize).fill(null));
+            const placedWords = [];
+            const wordPositions = [];
+
+            const firstWord = words[0];
+            const startRow = Math.floor(gridSize / 2);
+            const startCol = Math.floor((gridSize - firstWord.respuesta.length) / 2);
+
+            placeWord(grid, firstWord.respuesta, startRow, startCol, 'horizontal');
+            placedWords.push(firstWord);
+            wordPositions.push({ word: firstWord, row: startRow, col: startCol, direction: 'horizontal', number: 1 });
+
+            let wordNumber = 2;
+            for (let i = 1; i < words.length; i++) {
+                const word = words[i];
+                const placement = findBestPlacement(grid, word.respuesta, wordPositions, gridSize);
+                if (placement) {
+                    placeWord(grid, word.respuesta, placement.row, placement.col, placement.direction);
+                    placedWords.push(word);
+                    wordPositions.push({ word: word, row: placement.row, col: placement.col, direction: placement.direction, number: wordNumber++ });
+                }
+            }
+            return { grid, wordPositions, placedWords };
+        }
+
+        function findBestPlacement(grid, word, placedWords, gridSize) {
+            let bestPlacement = null;
+            let maxIntersections = 0;
+            for (let i = 0; i < placedWords.length; i++) {
+                const placed = placedWords[i];
+                for (let wi = 0; wi < word.length; wi++) {
+                    for (let pi = 0; pi < placed.word.respuesta.length; pi++) {
+                        if (word[wi] === placed.word.respuesta[pi]) {
+                            let row, col, direction;
+                            if (placed.direction === 'horizontal') { direction = 'vertical'; row = placed.row - wi; col = placed.col + pi; }
+                            else { direction = 'horizontal'; row = placed.row + pi; col = placed.col - wi; }
+                            if (canPlaceWord(grid, word, row, col, direction, gridSize)) {
+                                const intersections = countIntersections(grid, word, row, col, direction);
+                                if (intersections > maxIntersections) { maxIntersections = intersections; bestPlacement = { row, col, direction }; }
+                            }
+                        }
+                    }
+                }
+            }
+            return bestPlacement;
+        }
+
+        function canPlaceWord(grid, word, row, col, direction, gridSize) {
+            const dr = direction === 'vertical' ? 1 : 0;
+            const dc = direction === 'horizontal' ? 1 : 0;
+            if (row < 0 || col < 0) return false;
+            if (row + dr * (word.length - 1) >= gridSize) return false;
+            if (col + dc * (word.length - 1) >= gridSize) return false;
+            const beforeRow = row - dr, beforeCol = col - dc;
+            if (beforeRow >= 0 && beforeCol >= 0 && grid[beforeRow][beforeCol] !== null) return false;
+            const afterRow = row + dr * word.length, afterCol = col + dc * word.length;
+            if (afterRow < gridSize && afterCol < gridSize && grid[afterRow][afterCol] !== null) return false;
+            for (let i = 0; i < word.length; i++) {
+                const r = row + dr * i, c = col + dc * i;
+                if (grid[r][c] !== null && grid[r][c] !== word[i]) return false;
+                if (grid[r][c] === null) {
+                    if (direction === 'horizontal') { if (r > 0 && grid[r-1][c] !== null) return false; if (r < gridSize-1 && grid[r+1][c] !== null) return false; }
+                    else { if (c > 0 && grid[r][c-1] !== null) return false; if (c < gridSize-1 && grid[r][c+1] !== null) return false; }
+                }
+            }
+            return true;
+        }
+
+        function countIntersections(grid, word, row, col, direction) {
+            const dr = direction === 'vertical' ? 1 : 0;
+            const dc = direction === 'horizontal' ? 1 : 0;
+            let count = 0;
+            for (let i = 0; i < word.length; i++) { if (grid[row + dr * i][col + dc * i] !== null) count++; }
+            return count;
+        }
+
+        function placeWord(grid, word, row, col, direction) {
+            const dr = direction === 'vertical' ? 1 : 0;
+            const dc = direction === 'horizontal' ? 1 : 0;
+            for (let i = 0; i < word.length; i++) { grid[row + dr * i][col + dc * i] = word[i]; }
+        }
+
+        function displayCrossword() {
+            const { grid, wordPositions } = crosswordData;
+            const showAnswers = currentView === 'con-respuestas';
+
+            let minRow = grid.length, maxRow = 0, minCol = grid[0].length, maxCol = 0;
+            for (let r = 0; r < grid.length; r++) {
+                for (let c = 0; c < grid[r].length; c++) {
+                    if (grid[r][c] !== null) { minRow = Math.min(minRow, r); maxRow = Math.max(maxRow, r); minCol = Math.min(minCol, c); maxCol = Math.max(maxCol, c); }
+                }
+            }
+
+            const numberMap = {};
+            wordPositions.forEach(wp => { const key = `${wp.row},${wp.col}`; if (!numberMap[key]) numberMap[key] = []; numberMap[key].push(wp.number); });
+
+            let html = '<div class="crossword-grid">';
+            for (let r = minRow; r <= maxRow; r++) {
+                html += '<div class="crossword-row">';
+                for (let c = minCol; c <= maxCol; c++) {
+                    if (grid[r][c] !== null) {
+                        const key = `${r},${c}`;
+                        const numbers = numberMap[key] ? numberMap[key].join(',') : '';
+                        html += `<div class="crossword-cell">`;
+                        if (numbers) html += `<span class="cell-number">${numbers}</span>`;
+                        if (showAnswers) html += `<span class="cell-letter">${grid[r][c]}</span>`;
+                        html += `</div>`;
+                    } else { html += '<div class="crossword-cell black"></div>'; }
+                }
+                html += '</div>';
+            }
+            html += '</div>';
+            document.getElementById('crosswordDisplay').innerHTML = html;
+
+            const horizontalClues = wordPositions.filter(wp => wp.direction === 'horizontal');
+            const verticalClues = wordPositions.filter(wp => wp.direction === 'vertical');
+
+            let cluesHtml = `
+                <div class="clues-column">
+                    <h3>→ HORIZONTALES</h3>
+                    ${horizontalClues.map(clue => `<div class="clue-item"><span class="clue-number">${clue.number}.</span>${clue.word.pregunta}</div>`).join('')}
+                </div>
+                <div class="clues-column">
+                    <h3>↓ VERTICALES</h3>
+                    ${verticalClues.map(clue => `<div class="clue-item"><span class="clue-number">${clue.number}.</span>${clue.word.pregunta}</div>`).join('')}
+                </div>
+            `;
+            document.getElementById('cluesSection').innerHTML = cluesHtml;
+        }
+
+        function toggleView(view) {
+            currentView = view;
+            document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            displayCrossword();
+        }
+
+        function downloadPDF(type) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const { grid, wordPositions } = crosswordData;
+            const showAnswers = type === 'con-respuestas';
+
+            let minRow = grid.length, maxRow = 0, minCol = grid[0].length, maxCol = 0;
+            for (let r = 0; r < grid.length; r++) {
+                for (let c = 0; c < grid[r].length; c++) {
+                    if (grid[r][c] !== null) { minRow = Math.min(minRow, r); maxRow = Math.max(maxRow, r); minCol = Math.min(minCol, c); maxCol = Math.max(maxCol, c); }
+                }
+            }
+
+            const rows = maxRow - minRow + 1;
+            const cols = maxCol - minCol + 1;
+            const pageWidth = 210, pageHeight = 297, margin = 10;
+            const availableWidth = pageWidth - (margin * 2);
+            
+            const maxGridHeight = 140; 
+            let cellSize = Math.min(availableWidth / cols, maxGridHeight / rows);
+            cellSize = Math.min(cellSize, 14); 
+            cellSize = Math.max(cellSize, 6);
+
+            const gridWidth = cols * cellSize;
+            const gridHeight = rows * cellSize;
+            const startX = (pageWidth - gridWidth) / 2;
+            const startY = 30;
+
+            // Título con marca Palabria
+            doc.setFontSize(24);
+            doc.setFont(undefined, 'bold');
+            doc.text('PALABRIA', pageWidth / 2, 15, { align: 'center' });
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            doc.text(`Crucigrama · Intento #${attemptNumber}`, pageWidth / 2, 22, { align: 'center' });
+            
+            // Línea decorativa bajo el título
+            doc.setDrawColor(212, 160, 74);
+            doc.setLineWidth(0.5);
+            doc.line(60, 24, 150, 24);
+
+            const numberMap = {};
+            wordPositions.forEach(wp => { const key = `${wp.row},${wp.col}`; if (!numberMap[key]) numberMap[key] = []; numberMap[key].push(wp.number); });
+
+            for (let r = minRow; r <= maxRow; r++) {
+                for (let c = minCol; c <= maxCol; c++) {
+                    const x = startX + (c - minCol) * cellSize;
+                    const y = startY + (r - minRow) * cellSize;
+                    
+                    if (grid[r][c] !== null) {
+                        doc.setFillColor(255, 253, 248);
+                        doc.setDrawColor(31, 27, 23);
+                        doc.setLineWidth(0.3);
+                        doc.rect(x, y, cellSize, cellSize, 'FD');
+                        
+                        const key = `${r},${c}`;
+                        if (numberMap[key]) {
+                            doc.setFontSize(Math.min(5.5, cellSize * 0.4));
+                            doc.text(numberMap[key].join(','), x + 0.5, y + 2.5);
+                        }
+                        if (showAnswers) {
+                            doc.setFontSize(Math.min(9, cellSize * 0.6));
+                            doc.setFont(undefined, 'bold');
+                            doc.text(grid[r][c], x + cellSize/2, y + cellSize/2 + 1, { align: 'center' });
+                            doc.setFont(undefined, 'normal');
+                        }
+                    } else {
+                        doc.setFillColor(31, 27, 23);
+                        doc.setDrawColor(31, 27, 23);
+                        doc.rect(x, y, cellSize, cellSize, 'F');
+                    }
+                }
+            }
+
+            const horizontalClues = wordPositions.filter(wp => wp.direction === 'horizontal');
+            const verticalClues = wordPositions.filter(wp => wp.direction === 'vertical');
+            
+            const cluesStartY = startY + gridHeight + 12;
+            const colWidth = (pageWidth - (margin * 3)) / 2;
+            const leftColX = margin;
+            const rightColX = margin + colWidth + margin;
+            const maxPageY = pageHeight - margin;
+
+            let leftY = cluesStartY;
+            let rightY = cluesStartY;
+            let leftIdx = 0;
+            let rightIdx = 0;
+            let isFirstPage = true;
+
+            function drawHeader(y, title, x) {
+                doc.setFontSize(12);
+                doc.setFont(undefined, 'bold');
+                doc.text(title, x, y);
+                doc.setFont(undefined, 'normal');
+                doc.setFontSize(9);
+                return y + 7;
+            }
+
+            function drawClue(clue, x, y, width) {
+                const numberText = `${clue.number}.`;
+                const questionText = clue.word.pregunta;
+                
+                doc.setFont(undefined, 'bold');
+                doc.text(numberText, x, y);
+                
+                const numberWidth = doc.getTextWidth(numberText) + 1.5;
+                const lines = doc.splitTextToSize(questionText, width - numberWidth);
+                
+                doc.setFont(undefined, 'normal');
+                doc.text(lines[0], x + numberWidth, y);
+                y += 4.5;
+                
+                for (let i = 1; i < lines.length; i++) {
+                    doc.text(lines[i], x + numberWidth, y);
+                    y += 4.5;
+                }
+                return y + 2;
+            }
+
+            while (leftIdx < horizontalClues.length || rightIdx < verticalClues.length) {
+                if (leftIdx === 0 && isFirstPage) { leftY = drawHeader(leftY, 'HORIZONTALES', leftColX); isFirstPage = false; }
+                else if (leftIdx === 0 && !isFirstPage) { leftY = drawHeader(leftY, 'HORIZONTALES', leftColX); }
+                
+                if (rightIdx === 0) { rightY = drawHeader(rightY, 'VERTICALES', rightColX); }
+
+                if (leftIdx < horizontalClues.length) {
+                    if (leftY + 15 > maxPageY) {
+                        doc.addPage();
+                        leftY = margin;
+                        rightY = margin;
+                        leftY = drawHeader(leftY, 'HORIZONTALES', leftColX);
+                        rightY = drawHeader(rightY, 'VERTICALES', rightColX);
+                    }
+                    leftY = drawClue(horizontalClues[leftIdx], leftColX, leftY, colWidth);
+                    leftIdx++;
+                }
+
+                if (rightIdx < verticalClues.length) {
+                    if (rightY + 15 > maxPageY) {
+                        if (leftY > margin + 10) {
+                            doc.addPage();
+                            leftY = margin;
+                            rightY = margin;
+                            leftY = drawHeader(leftY, 'HORIZONTALES', leftColX);
+                            rightY = drawHeader(rightY, 'VERTICALES', rightColX);
+                        }
+                    }
+                    rightY = drawClue(verticalClues[rightIdx], rightColX, rightY, colWidth);
+                    rightIdx++;
+                }
+            }
+
+            doc.save(`palabria-intento${attemptNumber}-${type}.pdf`);
+        }
+    </script>
+</body>
+</html>
