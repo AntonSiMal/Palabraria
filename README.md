@@ -2,11 +2,11 @@
 
 > *"Donde las palabras se cruzan y las ideas cobran forma"*
 
-**Palabraria** es un generador de crucigramas interactivo que transforma archivos CSV con preguntas y respuestas en crucigramas listos para imprimir. Cuenta con un diseño elegante inspirado en mapas topográficos y juegos de mesa clásicos, además de exportación profesional a PDF.
+**Palabraria** es un generador de crucigramas interactivo que transforma archivos de Excel (`.xlsx`, `.xls`) o de texto (`.csv`, `.tsv`) con pistas y respuestas en crucigramas listos para imprimir. Cuenta con un diseño elegante inspirado en mapas topográficos y juegos de mesa clásicos, además de exportación profesional a PDF.
 
 🌐 **[🚀 Ver Demo en Vivo](https://antonsimal.github.io/Palabraria/)**
 
-![Versión](https://img.shields.io/badge/Versión-1.0.0-1f1b17?style=flat-square)
+![Versión](https://img.shields.io/badge/Versión-1.1.0-1f1b17?style=flat-square)
 ![Licencia](https://img.shields.io/badge/Licencia-MIT-5a8f5a?style=flat-square)
 ![Estado](https://img.shields.io/badge/Estado-Activo-5a8f5a?style=flat-square)
 
@@ -14,14 +14,14 @@
 
 ## ✨ Características
 
-- 📁 **Carga flexible de archivos**: Soporta CSV, TSV y TXT con detección automática de separadores (tabulación, coma, punto y coma).
-- 🧠 **Algoritmo inteligente**: Coloca las palabras buscando el máximo número de intersecciones para un crucigrama compacto.
+- 📁 **Carga flexible de archivos**: Soporta Excel (`.xlsx`, `.xls`), CSV, TSV y TXT. En Excel, lee automáticamente la Columna A (pistas) y Columna B (respuestas).
+- 🧠 **Limpieza inteligente de respuestas**: Acepta respuestas con espacios, números y cualquier combinación de mayúsculas/minúsculas. El sistema las adapta automáticamente a la cuadrícula (eliminando espacios y acentos).
 - 🎲 **Múltiples alternativas**: Genera diferentes disposiciones del crucigrama con un solo clic.
 - 👁️ **Vista dual**: Alterna instantáneamente entre ver el crucigrama con o sin respuestas.
 - 📄 **Exportación a PDF**: Descarga el crucigrama en PDF con diseño profesional, celdas negras reales y pistas organizadas en dos columnas.
 - 🗺️ **Diseño Topo**: Estética cuidada inspirada en mapas topográficos con tonos tierra, crema y acentos dorados.
 - 📱 **100% Responsive**: Se adapta perfectamente a dispositivos móviles, tablets y escritorio.
-- 🔍 **Vista previa en tiempo real**: Visualiza las pistas cargadas antes de generar el crucigrama.
+- 🔍 **Vista previa en tiempo real**: Visualiza las pistas cargadas y cómo se adaptarán antes de generar el crucigrama.
 
 ---
 
@@ -30,7 +30,7 @@
 No necesitas instalar nada. La aplicación funciona completamente en el navegador:
 
 1. Visita la **[Demo en Vivo](https://antonsimal.github.io/Palabraria/)**
-2. Haz clic en **"Seleccionar archivo"** y carga tu CSV/TSV.
+2. Haz clic en **"Seleccionar archivo"** y carga tu archivo de Excel o texto.
 3. Revisa la vista previa y haz clic en **"🧩 Generar Palabraria"**.
 4. Descarga tu PDF listo para imprimir.
 
@@ -45,46 +45,44 @@ npx http-server
 
 ---
 
-## 📋 Formato del archivo CSV
+## 📋 Formato de los archivos
 
-Palabraria es inteligente y detecta automáticamente el separador. Puedes usar cualquiera de estos formatos:
+Palabraria es inteligente y se adapta a tu flujo de trabajo. Puedes usar cualquiera de estos formatos:
 
-### Separador por tabulación (Recomendado)
-```text
-"Memoria temporal y volátil que actúa como ""tabla de trabajo"" y se borra al apagar la PC."	RAM
-"Componente físico considerado el ""cerebro"" del sistema."	CPU
-Dispositivo de entrada clásico para introducir comandos.	TECLADO
-```
+### 📊 Archivo de Excel (.xlsx, .xls) *(Recomendado)*
+Simplemente organiza tu hoja de cálculo con dos columnas:
+- **Columna A**: La pista o pregunta.
+- **Columna B**: La respuesta.
 
-### Separador por coma
+*Ejemplo en Excel:*
+| A (Pista) | B (Respuesta) |
+| :--- | :--- |
+| Memoria temporal y volátil que actúa como "tabla de trabajo". | RAM |
+| Atajo de teclado para deshacer un error. | Ctrl Z |
+| Software principal que administra los recursos. | Sistema Operativo |
+
+### 📝 Archivo de Texto (.csv, .tsv, .txt)
+Detecta automáticamente el separador (tabulación, coma o punto y coma).
 ```csv
 pregunta,respuesta
 "Capital de Francia",PARIS
 "Color del cielo",AZUL
 ```
 
-### Separador por punto y coma
-```csv
-pregunta;respuesta
-"Software de seguridad";ANTIVIRUS
-"Sistema operativo de código abierto";LINUX
-```
-
 ### 📌 Reglas importantes:
-- ✅ Las respuestas deben estar en **MAYÚSCULAS**.
-- ✅ Sin espacios ni acentos en las respuestas (ej. `SISTEMAOPERATIVO`).
-- ✅ Las preguntas pueden contener comillas internas usando `""` (doble comilla).
-- ✅ Se puede incluir o omitir la fila de encabezado (`pregunta,respuesta`).
+- ✅ **Las respuestas son flexibles**: Pueden contener **espacios, números y cualquier combinación de mayúsculas/minúsculas** (ej. `Ctrl Z`, `Sistema Operativo`, `DOCX`). El sistema las convertirá automáticamente a mayúsculas sin espacios ni acentos para encajar perfectamente en la cuadrícula (ej. `CTRLZ`, `SISTEMAOPERATIVO`).
+- ✅ **Las preguntas** se mantienen exactamente como las escribiste para una lectura clara en el PDF.
+- ✅ Se puede incluir o omitir la fila de encabezado en archivos de texto.
 
 ---
 
 ## 🎯 Cómo usar la herramienta
 
-1. **Cargar archivo**: Haz clic en el botón de carga y selecciona tu archivo de pistas.
-2. **Vista previa**: Revisa la lista desplegable para confirmar que las preguntas y respuestas se leyeron correctamente.
+1. **Cargar archivo**: Haz clic en el botón de carga y selecciona tu archivo de Excel o texto.
+2. **Vista previa**: Revisa la lista desplegable para confirmar que las preguntas y respuestas se leyeron y adaptaron correctamente.
 3. **Generar**: Haz clic en "🧩 Generar Palabraria".
-4. **Alternativas**: Si la distribución no te convence, usa "🎲 Nueva Alternativa" para reorganizar las palabras.
-5. **Vista previa**: Usa los botones "Ocultar/Mostrar Respuestas" para verificar el resultado.
+4. **Alternativas**: Si la distribución no te convence, usa "🎲 Nueva Alternativa" para reorganizar las palabras y buscar más intersecciones.
+5. **Vista previa**: Usa los botones "Ocultar/Mostrar Respuestas" para verificar el resultado final.
 6. **Descargar**: Exporta el PDF "Sin Respuestas" (para los jugadores) o "Con Respuestas" (para el facilitador).
 
 ---
@@ -93,8 +91,9 @@ pregunta;respuesta
 
 - **HTML5** - Estructura semántica y accesible.
 - **CSS3** - Estilos modernos con variables CSS (`:root`) y `color-mix()` para la paleta topográfica.
-- **JavaScript (ES6+)** - Lógica del generador, algoritmo de colocación de palabras y parser CSV robusto.
-- **jsPDF** - Generación de documentos PDF directamente en el navegador sin necesidad de backend.
+- **JavaScript (ES6+)** - Lógica del generador, algoritmo de colocación de palabras y parsers robustos.
+- **SheetJS (xlsx)** - Lectura y procesamiento de archivos Excel directamente en el navegador.
+- **jsPDF** - Generación de documentos PDF profesionales sin necesidad de backend.
 
 ---
 
@@ -137,7 +136,7 @@ pregunta;respuesta
 Si encuentras un bug o tienes una sugerencia, por favor abre un [Issue](https://github.com/antonsimal/Palabraria/issues) en el repositorio incluyendo:
 - Descripción clara del problema.
 - Pasos para reproducirlo.
-- El archivo CSV que causó el error (si aplica).
+- El archivo (Excel o CSV) que causó el error (si aplica).
 - Capturas de pantalla si es posible.
 
 ---
