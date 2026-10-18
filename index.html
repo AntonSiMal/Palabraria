@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Palabria - Generador de Crucigramas</title>
+    <title>Palabraria - Generador de Crucigramas</title>
+    <!-- Librería para leer archivos Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Librería para generar PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root {
@@ -75,18 +78,8 @@
             border-radius: 2px;
         }
 
-        .header .tagline {
-            color: var(--topo-piece-line);
-            font-size: 1.1em;
-            font-style: italic;
-            margin-top: 10px;
-        }
-
-        .header .subtitle {
-            color: var(--topo-piece-line);
-            font-size: 1em;
-            margin-top: 5px;
-        }
+        .header .tagline { color: var(--topo-piece-line); font-size: 1.1em; font-style: italic; margin-top: 10px; }
+        .header .subtitle { color: var(--topo-piece-line); font-size: 1em; margin-top: 5px; }
 
         .content { padding: 30px; }
 
@@ -122,10 +115,7 @@
             letter-spacing: 0.02em;
         }
 
-        .upload-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(31, 27, 23, 0.25);
-        }
+        .upload-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(31, 27, 23, 0.25); }
 
         .format-info {
             background: var(--topo-sea);
@@ -277,11 +267,7 @@
             margin-top: 20px;
         }
 
-        .footer-brand strong {
-            color: var(--topo-ink);
-            font-weight: 700;
-            letter-spacing: 0.05em;
-        }
+        .footer-brand strong { color: var(--topo-ink); font-weight: 700; letter-spacing: 0.05em; }
 
         @media (max-width: 768px) {
             .clues-section { grid-template-columns: 1fr; }
@@ -304,25 +290,24 @@
 <body>
     <div class="container">
         <div class="header">
-            <div class="logo">Palabria</div>
+            <div class="logo">Palabraria</div>
             <p class="tagline">"Donde las palabras se cruzan y las ideas cobran forma"</p>
-            <p class="subtitle">Generador de crucigramas personalizados desde CSV</p>
+            <p class="subtitle">Generador de crucigramas personalizados desde CSV o Excel</p>
         </div>
 
         <div class="content">
             <div class="upload-section">
                 <h2>📁 Cargar archivo de pistas</h2>
-                <p style="margin: 15px 0; color: var(--topo-piece-line);">Selecciona tu archivo con las preguntas y respuestas</p>
-                <label for="csvFile" class="upload-btn">Seleccionar archivo</label>
-                <input type="file" id="csvFile" accept=".csv,.tsv,.txt" />
+                <p style="margin: 15px 0; color: var(--topo-piece-line);">Selecciona tu archivo Excel (.xlsx, .xls) o texto (.csv, .tsv, .txt)</p>
+                <label for="dataFile" class="upload-btn">Seleccionar archivo</label>
+                <input type="file" id="dataFile" accept=".csv,.tsv,.txt,.xlsx,.xls" />
                 
                 <div class="format-info">
                     <h3>📋 Formatos aceptados:</h3>
-                    <p style="margin-bottom: 8px;"><strong>Separador:</strong> Tabulación, coma o punto y coma</p>
-                    <p style="margin-bottom: 8px;"><code>pregunta [tab] respuesta</code></p>
-                    <p><code>"Pregunta con ""comillas"" internas" [tab] RESPUESTA</code></p>
+                    <p style="margin-bottom: 8px;"><strong>Excel (.xlsx, .xls):</strong> Columna A = Pistas, Columna B = Respuestas</p>
+                    <p style="margin-bottom: 8px;"><strong>Texto (.csv, .tsv, .txt):</strong> Separado por tabulación, coma o punto y coma</p>
                     <p style="margin-top: 12px; font-size: 0.9em; color: var(--topo-piece-line);">
-                        💡 Las respuestas deben estar en mayúsculas, sin espacios ni acentos.
+                        💡 Las respuestas pueden contener letras, números y espacios. El sistema las adaptará automáticamente a la cuadrícula.
                     </p>
                 </div>
 
@@ -335,8 +320,8 @@
             <div id="statusMessage" class="status-message"></div>
 
             <div class="controls" id="controlsSection" style="display: none;">
-                <button class="btn btn-primary" onclick="generateCrossword()">🧩 Generar Palabria</button>
-                <button class="btn btn-regenerate" id="regenerateBtn" onclick="regenerateCrossword()" style="display: none;"> Nueva Alternativa</button>
+                <button class="btn btn-primary" onclick="generateCrossword()">🧩 Generar Palabraria</button>
+                <button class="btn btn-regenerate" id="regenerateBtn" onclick="regenerateCrossword()" style="display: none;">🎲 Nueva Alternativa</button>
                 <button class="btn" onclick="downloadPDF('sin-respuestas')">📄 PDF Sin Respuestas</button>
                 <button class="btn" onclick="downloadPDF('con-respuestas')">📄 PDF Con Respuestas</button>
             </div>
@@ -354,7 +339,7 @@
             </div>
 
             <div class="footer-brand">
-                Hecho con ❤️ por <strong>PALABRIA</strong> · Generador de crucigramas
+                Hecho con ❤️ por <strong>PALABRARIA</strong> · Generador de crucigramas
             </div>
         </div>
     </div>
@@ -374,80 +359,123 @@
             return shuffled;
         }
 
-        function parseCSVLine(line, delimiter) {
-            const fields = [];
-            let current = '';
-            let inQuotes = false;
-            let i = 0;
+        // Función para limpiar la respuesta: mayúsculas, sin acentos, solo letras y números (sin espacios para la cuadrícula)
+        function cleanAnswer(rawAnswer) {
+            return rawAnswer.toUpperCase()
+                .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                .replace(/[^A-Z0-9]/g, "");
+        }
 
-            while (i < line.length) {
-                const char = line[i];
-                const nextChar = i + 1 < line.length ? line[i + 1] : '';
+        function parseFile(file) {
+            const fileName = file.name.toLowerCase();
+            
+            if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, {type: 'array'});
+                        const firstSheetName = workbook.SheetNames[0];
+                        const worksheet = workbook.Sheets[firstSheetName];
+                        const json = XLSX.utils.sheet_to_json(worksheet, {header: 1});
+                        processTabularData(json);
+                    } catch (error) {
+                        showStatus('Error al leer el archivo Excel. Verifica el formato.', 'error');
+                        console.error(error);
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            } else {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const text = e.target.result;
+                    const lines = text.split(/\r?\n/).filter(line => line.trim());
+                    if (lines.length === 0) { showStatus('Archivo vacío', 'error'); return; }
+                    
+                    // Detectar delimitador
+                    const firstLine = lines[0];
+                    const tabCount = (firstLine.match(/\t/g) || []).length;
+                    const semicolonCount = (firstLine.match(/;/g) || []).length;
+                    const commaCount = (firstLine.match(/,/g) || []).length;
+                    let delimiter = ',';
+                    if (tabCount > 0) delimiter = '\t';
+                    else if (semicolonCount > commaCount) delimiter = ';';
 
-                if (inQuotes) {
-                    if (char === '"' && nextChar === '"') { current += '"'; i += 2; continue; }
-                    else if (char === '"') { inQuotes = false; i++; continue; }
-                    else { current += char; i++; continue; }
-                } else {
-                    if (char === '"') { inQuotes = true; i++; continue; }
-                    else if (char === delimiter) { fields.push(current.trim()); current = ''; i++; continue; }
-                    else { current += char; i++; continue; }
-                }
+                    // Parsear CSV manualmente para manejar comillas
+                    const parsedLines = [];
+                    for (const line of lines) {
+                        const fields = [];
+                        let current = '';
+                        let inQuotes = false;
+                        for (let i = 0; i < line.length; i++) {
+                            const char = line[i];
+                            const nextChar = i + 1 < line.length ? line[i + 1] : '';
+                            if (inQuotes) {
+                                if (char === '"' && nextChar === '"') { current += '"'; i++; }
+                                else if (char === '"') { inQuotes = false; }
+                                else { current += char; }
+                            } else {
+                                if (char === '"') { inQuotes = true; }
+                                else if (char === delimiter) { fields.push(current.trim()); current = ''; }
+                                else { current += char; }
+                            }
+                        }
+                        fields.push(current.trim());
+                        parsedLines.push(fields);
+                    }
+                    processTabularData(parsedLines);
+                };
+                reader.readAsText(file);
             }
-            fields.push(current.trim());
-            return fields;
         }
 
-        function detectDelimiter(line) {
-            const tabCount = (line.match(/\t/g) || []).length;
-            const semicolonCount = (line.match(/;/g) || []).length;
-            const commaCount = (line.match(/,/g) || []).length;
-            if (tabCount > 0) return '\t';
-            if (semicolonCount > commaCount) return ';';
-            return ',';
-        }
-
-        document.getElementById('csvFile').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(event) { parseCSV(event.target.result); };
-            reader.readAsText(file);
-        });
-
-        function parseCSV(text) {
-            const lines = text.split(/\r?\n/).filter(line => line.trim());
+        function processTabularData(data) {
             csvData = [];
-            if (lines.length === 0) { showStatus('Archivo vacío', 'error'); return; }
+            if (!data || data.length === 0) { showStatus('Archivo vacío', 'error'); return; }
 
-            const delimiter = detectDelimiter(lines[0]);
             let startIndex = 0;
-            const firstFields = parseCSVLine(lines[0], delimiter);
-            if (firstFields.length >= 2) {
-                const firstField = firstFields[0].toLowerCase();
-                if (firstField.includes('pregunta') || firstField.includes('question') || firstField.includes('pista')) {
+            if (data[0].length >= 2) {
+                const firstField = String(data[0][0]).toLowerCase();
+                if (firstField.includes('pregunta') || firstField.includes('pista') || firstField.includes('question')) {
                     startIndex = 1;
                 }
             }
 
-            for (let i = startIndex; i < lines.length; i++) {
-                const line = lines[i].trim();
-                if (!line) continue;
-                const fields = parseCSVLine(line, delimiter);
-                if (fields.length >= 2) {
-                    const pregunta = fields[0].trim();
-                    const respuesta = fields[fields.length - 1].trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^A-Z0-9]/g, "");
-                    if (pregunta && respuesta && respuesta.length >= 2) {
-                        csvData.push({ pregunta, respuesta });
-                    }
+            for (let i = startIndex; i < data.length; i++) {
+                const row = data[i];
+                if (!row || row.length < 2) continue;
+                
+                const pregunta = String(row[0]).trim();
+                const respuestaRaw = String(row[1]).trim();
+                
+                if (!pregunta || !respuestaRaw) continue;
+
+                const respuestaGrid = cleanAnswer(respuestaRaw);
+                
+                // Solo aceptar respuestas que tengan al menos 2 caracteres válidos para la cuadrícula
+                if (respuestaGrid.length >= 2) {
+                    csvData.push({ 
+                        pregunta, 
+                        respuesta: respuestaGrid, 
+                        respuestaOriginal: respuestaRaw 
+                    });
                 }
             }
 
-            if (csvData.length === 0) { showStatus('No se encontraron datos válidos. Verifica el formato.', 'error'); return; }
+            if (csvData.length === 0) { 
+                showStatus('No se encontraron datos válidos. Asegúrate de que la Columna A tenga pistas y la B respuestas.', 'error'); 
+                return; 
+            }
+            
             showStatus(`✓ Se cargaron ${csvData.length} pistas correctamente`, 'success');
             document.getElementById('controlsSection').style.display = 'flex';
             showPreview();
         }
+
+        document.getElementById('dataFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) parseFile(file);
+        });
 
         function showPreview() {
             const container = document.getElementById('previewContainer');
@@ -660,15 +688,13 @@
             const startX = (pageWidth - gridWidth) / 2;
             const startY = 30;
 
-            // Título con marca Palabria
             doc.setFontSize(24);
             doc.setFont(undefined, 'bold');
-            doc.text('PALABRIA', pageWidth / 2, 15, { align: 'center' });
+            doc.text('PALABRARIA', pageWidth / 2, 15, { align: 'center' });
             doc.setFontSize(10);
             doc.setFont(undefined, 'normal');
             doc.text(`Crucigrama · Intento #${attemptNumber}`, pageWidth / 2, 22, { align: 'center' });
             
-            // Línea decorativa bajo el título
             doc.setDrawColor(212, 160, 74);
             doc.setLineWidth(0.5);
             doc.line(60, 24, 150, 24);
@@ -784,7 +810,7 @@
                 }
             }
 
-            doc.save(`palabria-intento${attemptNumber}-${type}.pdf`);
+            doc.save(`palabraria-intento${attemptNumber}-${type}.pdf`);
         }
     </script>
 </body>
