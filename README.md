@@ -14,14 +14,13 @@
 
 ## ✨ Características
 
-- 📁 **Carga flexible de archivos**: Soporta Excel (`.xlsx`, `.xls`), CSV, TSV y TXT. En Excel, lee automáticamente la Columna A (pistas) y Columna B (respuestas).
-- 🧠 **Limpieza inteligente de respuestas**: Acepta respuestas con espacios, números y cualquier combinación de mayúsculas/minúsculas. El sistema las adapta automáticamente a la cuadrícula (eliminando espacios y acentos).
+- 📊 **Soporte nativo para Excel**: Lee automáticamente la **Columna A** (pistas) y la **Columna B** (respuestas).
+- 🧠 **Limpieza inteligente**: Acepta respuestas con espacios, números o mayúsculas/minúsculas (ej. `Ctrl Z`, `Sistema Operativo`). El sistema las adapta automáticamente a la cuadrícula eliminando espacios y acentos (ej. `CTRLZ`, `SISTEMAOPERATIVO`).
 - 🎲 **Múltiples alternativas**: Genera diferentes disposiciones del crucigrama con un solo clic.
 - 👁️ **Vista dual**: Alterna instantáneamente entre ver el crucigrama con o sin respuestas.
-- 📄 **Exportación a PDF**: Descarga el crucigrama en PDF con diseño profesional, celdas negras reales y pistas organizadas en dos columnas.
-- 🗺️ **Diseño Topo**: Estética cuidada inspirada en mapas topográficos con tonos tierra, crema y acentos dorados.
-- 📱 **100% Responsive**: Se adapta perfectamente a dispositivos móviles, tablets y escritorio.
-- 🔍 **Vista previa en tiempo real**: Visualiza las pistas cargadas y cómo se adaptarán antes de generar el crucigrama.
+- 📄 **Exportación a PDF profesional**: Descarga el crucigrama con celdas negras reales y pistas organizadas en dos columnas lado a lado.
+- 🗺️ **Diseño Topo**: Estética cuidada inspirada en mapas topográficos con tonos tierra y crema.
+- 📱 **100% Responsive**: Se adapta perfectamente a móviles, tablets y escritorio.
 
 ---
 
@@ -34,81 +33,58 @@ No necesitas instalar nada. La aplicación funciona completamente en el navegado
 3. Revisa la vista previa y haz clic en **"🧩 Generar Palabraria"**.
 4. Descarga tu PDF listo para imprimir.
 
-*(Opcional) Si deseas ejecutarlo localmente, solo descarga el archivo `index.html` y ábrelo en cualquier navegador moderno, o usa un servidor local:*
+*(Opcional) Si deseas ejecutarlo localmente, descarga el archivo `index.html` y ábrelo en tu navegador, o usa un servidor local:*
 ```bash
-# Con Python
 python -m http.server 8000
-
-# Con Node.js
-npx http-server
 ```
 
 ---
 
 ## 📋 Formato de los archivos
 
-Palabraria es inteligente y se adapta a tu flujo de trabajo. Puedes usar cualquiera de estos formatos:
-
 ### 📊 Archivo de Excel (.xlsx, .xls) *(Recomendado)*
-Simplemente organiza tu hoja de cálculo con dos columnas:
-- **Columna A**: La pista o pregunta.
-- **Columna B**: La respuesta.
+El sistema está diseñado para leer tu hoja de cálculo de la siguiente manera:
+- **Columna A**: Contiene la pista o pregunta.
+- **Columna B**: Contiene la respuesta.
 
-*Ejemplo en Excel:*
-| A (Pista) | B (Respuesta) |
+**Ejemplo práctico en Excel:**
+
+| Columna A (Pista) | Columna B (Respuesta) |
 | :--- | :--- |
-| Memoria temporal y volátil que actúa como "tabla de trabajo". | RAM |
-| Atajo de teclado para deshacer un error. | Ctrl Z |
-| Software principal que administra los recursos. | Sistema Operativo |
+| Software principal que administra los recursos de la computadora. | Sistema Operativo |
+| Atajo de teclado que se usa para deshacer un error cometido recientemente. | Ctrl Z |
+| Extensión de archivo típica para un documento de texto profesional. | DOCX |
+| Memoria temporal y volátil que se borra al apagar la PC. | RAM |
+
+> 💡 **Nota sobre las respuestas:** No necesitas ajustar el formato manualmente. Si escribes `Sistema Operativo` o `Ctrl Z` en la Columna B, Palabraria lo procesará inteligentemente y lo colocará en la cuadrícula como `SISTEMAOPERATIVO` o `CTRLZ` (mayúsculas, sin espacios ni acentos), mientras que en el PDF se mostrará la pista original completa y legible.
 
 ### 📝 Archivo de Texto (.csv, .tsv, .txt)
-Detecta automáticamente el separador (tabulación, coma o punto y coma).
+Si prefieres usar texto, el sistema detecta automáticamente el separador (tabulación, coma o punto y coma).
 ```csv
-pregunta,respuesta
+Pista,Respuesta
 "Capital de Francia",PARIS
 "Color del cielo",AZUL
 ```
-
-### 📌 Reglas importantes:
-- ✅ **Las respuestas son flexibles**: Pueden contener **espacios, números y cualquier combinación de mayúsculas/minúsculas** (ej. `Ctrl Z`, `Sistema Operativo`, `DOCX`). El sistema las convertirá automáticamente a mayúsculas sin espacios ni acentos para encajar perfectamente en la cuadrícula (ej. `CTRLZ`, `SISTEMAOPERATIVO`).
-- ✅ **Las preguntas** se mantienen exactamente como las escribiste para una lectura clara en el PDF.
-- ✅ Se puede incluir o omitir la fila de encabezado en archivos de texto.
 
 ---
 
 ## 🎯 Cómo usar la herramienta
 
 1. **Cargar archivo**: Haz clic en el botón de carga y selecciona tu archivo de Excel o texto.
-2. **Vista previa**: Revisa la lista desplegable para confirmar que las preguntas y respuestas se leyeron y adaptaron correctamente.
+2. **Vista previa**: Revisa la lista para confirmar que las preguntas y respuestas se leyeron y adaptaron correctamente.
 3. **Generar**: Haz clic en "🧩 Generar Palabraria".
 4. **Alternativas**: Si la distribución no te convence, usa "🎲 Nueva Alternativa" para reorganizar las palabras y buscar más intersecciones.
-5. **Vista previa**: Usa los botones "Ocultar/Mostrar Respuestas" para verificar el resultado final.
-6. **Descargar**: Exporta el PDF "Sin Respuestas" (para los jugadores) o "Con Respuestas" (para el facilitador).
+5. **Verificar**: Usa los botones "Ocultar/Mostrar Respuestas" para revisar el resultado.
+6. **Descargar**: Exporta el PDF "Sin Respuestas" (para los jugadores) o "Con Respuestas" (hoja de respuestas para el facilitador).
 
 ---
 
 ## 🛠️ Tecnologías Utilizadas
 
-- **HTML5** - Estructura semántica y accesible.
-- **CSS3** - Estilos modernos con variables CSS (`:root`) y `color-mix()` para la paleta topográfica.
-- **JavaScript (ES6+)** - Lógica del generador, algoritmo de colocación de palabras y parsers robustos.
+- **HTML5 / CSS3** - Estructura semántica y estilos modernos con variables CSS.
+- **JavaScript (ES6+)** - Lógica del generador y algoritmo de colocación de palabras.
 - **SheetJS (xlsx)** - Lectura y procesamiento de archivos Excel directamente en el navegador.
 - **jsPDF** - Generación de documentos PDF profesionales sin necesidad de backend.
-
----
-
-## 🎨 Paleta de Colores (Estilo Topo)
-
-| Color | Hex | Uso |
-|-------|-----|-----|
-| 🟫 Tierra | `#ece6da` | Fondo general de la página |
-| 📜 Crema | `#fffdf8` | Fondo de celdas y contenedores |
-| ⬛ Tinta | `#1f1b17` | Texto principal y celdas negras |
-| 🟫 Línea | `#b9ad9b` | Bordes, separadores y grid |
-| 🟡 Acento | `#d4a04a` | Números de celda, badges y destacados |
-| 🟢 Correcto | `#5a8f5a` | Mensajes de éxito |
-| 🔴 Error | `#8b4545` | Mensajes de error |
-| 🔵 Mar | `#daeffc` | Fondos de información y ayuda |
 
 ---
 
@@ -123,11 +99,9 @@ pregunta,respuesta
 5. Abre un Pull Request.
 
 ### 💡 Ideas para futuras mejoras:
-- [ ] Soporte para crucigramas temáticos con imágenes o iconos.
-- [ ] Exportar el crucigrama a formato de imagen (PNG/SVG).
 - [ ] Modo de juego interactivo en la web (escribir directamente en las celdas).
+- [ ] Exportar el crucigrama a formato de imagen (PNG/SVG).
 - [ ] Biblioteca de plantillas de crucigramas predefinidos.
-- [ ] Soporte para múltiples idiomas y diccionarios automáticos.
 
 ---
 
@@ -137,13 +111,12 @@ Si encuentras un bug o tienes una sugerencia, por favor abre un [Issue](https://
 - Descripción clara del problema.
 - Pasos para reproducirlo.
 - El archivo (Excel o CSV) que causó el error (si aplica).
-- Capturas de pantalla si es posible.
 
 ---
 
 ## 📄 Licencia
 
-Este proyecto está bajo la **Licencia MIT**. Consulta el archivo [LICENSE](LICENSE) para más detalles. Esto significa que puedes usar, modificar y distribuir este código libremente, siempre que mantengas el aviso de copyright original.
+Este proyecto está bajo la **Licencia MIT**. Consulta el archivo [LICENSE](LICENSE) para más detalles.
 
 ---
 
